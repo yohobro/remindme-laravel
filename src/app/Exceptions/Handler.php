@@ -2,7 +2,11 @@
 
 namespace App\Exceptions;
 
+use Illuminate\Auth\AuthenticationException;
+use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Foundation\Exceptions\Handler as ExceptionHandler;
+use Laravel\Sanctum\Exceptions\MissingAbilityException;
+use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Throwable;
 
 class Handler extends ExceptionHandler
@@ -18,13 +22,50 @@ class Handler extends ExceptionHandler
         'password_confirmation',
     ];
 
-    /**
-     * Register the exception handling callbacks for the application.
-     */
-    public function register(): void
+    public function render($request, Throwable $e)
     {
-        $this->reportable(function (Throwable $e) {
-            //
-        });
+
+        if ($e instanceof MissingAbilityException) {
+            return response()->json([
+                'ok' => false,
+                'err' => 'ERR_BAD_REQUEST',
+                'msg' => $e->getMessage()
+            ], 401);
+        }
+
+        if ($e instanceof ModelNotFoundException) {
+            return response()->json([
+                'ok' => false,
+                'err' => 'ERR_NOT_FOUND',
+                'msg' => 'Data not found'
+            ], 401);
+        }
+
+        if ($e instanceof NotFoundHttpException) {
+            return response()->json([
+                'ok' => false,
+                'err' => 'ERR_NOT_FOUND',
+                'msg' => $e->getMessage()
+            ], 404);
+        }
+
+        return parent::render($request, $e);
+    }
+
+    protected function unauthenticated($request, AuthenticationException $exception)
+    {
+        if (auth('sanctum')->check()) {
+            return response()->json([
+                'ok' => false,
+                'err' => 'ERR_INVALID_REFRESH_TOKEN',
+                'msg' => 'invalid refresh token'
+            ], 401);
+        }
+
+        return response()->json([
+            'ok' => false,
+            'err' => 'ERR_INVALID_CREDS',
+            'msg' => $exception->getMessage()
+        ], 401);
     }
 }

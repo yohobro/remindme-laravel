@@ -46,7 +46,7 @@ return [
     |
     */
 
-    'expiration' => null,
+    'expiration' => 120,
 
     /*
     |--------------------------------------------------------------------------
@@ -79,5 +79,17 @@ return [
         'encrypt_cookies' => App\Http\Middleware\EncryptCookies::class,
         'verify_csrf_token' => App\Http\Middleware\VerifyCsrfToken::class,
     ],
+
+    /*
+    |--------------------------------------------------------------------------
+    | Expiration Minutes
+    |--------------------------------------------------------------------------
+    |
+    | This value controls the number of minutes until an refresh token will be
+    | considered expired.
+    |
+    */
+
+    'refresh_token_expiration' => 600
 
 ];

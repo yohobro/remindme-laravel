@@ -1,0 +1,36 @@
+# Build the Vue.js app
+# FROM node:20.9 as stage
+# WORKDIR /app
+# COPY package*.json ./
+# RUN npm install
+# COPY . .
+# RUN npm run build
+
+# # Vue.js app with a lightweight web server
+# FROM nginx:stable-alpine as prod
+# COPY --from=stage /app/dist /usr/share/nginx/html
+# EXPOSE 80
+# CMD ["nginx", "-g", "daemon off;"]
+
+FROM node:lts-alpine
+
+# pasang (install) server http sederhana untuk menjalankan static content
+RUN npm install -g http-server
+
+# buat folder 'app' pada direktori yang sedang dikerjakan
+WORKDIR /app
+
+# salin 'package.json' dan 'package-lock.json' (jika ada)
+COPY package*.json ./
+
+# pasang dependecy proyek
+RUN npm install
+
+# salin berkas-berkas proyek serta folder-foldernya ke direktori yang sedang dikerjakan (misal. folder 'app)
+COPY . .
+
+# bangun aplikasi untuk produksi dengan minifikasi
+RUN npm run build
+
+EXPOSE 8080
+CMD [ "http-server", "dist" ]

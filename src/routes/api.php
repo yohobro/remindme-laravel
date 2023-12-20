@@ -1,5 +1,9 @@
 <?php
 
+use App\Enums\AccessTokenEnum;
+use App\Http\Controllers\Api\ReminderController;
+use App\Http\Controllers\AuthController;
+use App\Models\Reminder;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -14,6 +18,19 @@ use Illuminate\Support\Facades\Route;
 |
 */
 
-Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
-    return $request->user();
+Route::middleware('auth:sanctum', 'ability:' . AccessTokenEnum::REFRESH_ACCESS_TOKEN->value)->group(function() {
+    Route::put('/session', [AuthController::class, 'refreshToken']);
 });
+
+
+Route::middleware('auth:sanctum', 'ability:' . AccessTokenEnum::ACCESS_TOKEN->value)->group(function () {
+    Route::post('/reminders', [ReminderController::class, 'store']);
+    Route::get('/reminders/{id}', [ReminderController::class, 'show']);
+    Route::put('/reminders/{reminder}', [ReminderController::class, 'update']);
+    Route::delete('/reminders/{reminder}', [ReminderController::class, 'delete']);
+    Route::get('/reminders/limit/{limit}', [ReminderController::class, 'index']);
+    Route::post('/logout', [AuthController::class, 'logout']);
+});
+
+Route::post('/register', [AuthController::class, 'register']);
+Route::post('/session', [AuthController::class, 'login']);
